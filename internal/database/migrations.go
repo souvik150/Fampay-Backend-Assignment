@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+	"github.com/souvik150/Fampay-Backend-Assignment/internal/models"
 	"gorm.io/gorm"
 	"log"
 )
@@ -8,8 +10,11 @@ import (
 func RunMigrations(db *gorm.DB) {
 	log.Println("Running Migrations")
 
-	//db.AutoMigrate(&models.User{})
-	//db.AutoMigrate(&models.Video{})
+	err := db.AutoMigrate(&models.User{}, &models.RefreshToken{}, &models.Video{})
+	if err != nil {
+		fmt.Println("Migration error")
+		return
+	}
 
 	log.Println("🚀 Migrations completed")
 }
