@@ -2,9 +2,11 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/souvik150/Fampay-Backend-Assignment/internal/database"
 	"github.com/souvik150/Fampay-Backend-Assignment/internal/models"
+	"gorm.io/gorm"
 	"net/http"
 	"sort"
 	"strconv"
@@ -89,9 +91,22 @@ func GetSortedVideos(page, limit, topic string) ([]models.Video, int64, error) {
 }
 
 func SaveVideo(video models.Video) error {
-	result := database.DB.Create(&video)
+	// Check if a video with the same title already exists
+	var existingVideo models.Video
+	result := database.DB.Where("title = ?", video.Title).First(&existingVideo)
+	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return result.Error
+	}
+
+	// If a video with the same title already exists, return an error
+	if result.RowsAffected > 0 {
+		return errors.New("video with the same title already exists")
+	}
+
+	result = database.DB.Create(&video)
 	if result.Error != nil {
 		return result.Error
 	}
+
 	return nil
 }

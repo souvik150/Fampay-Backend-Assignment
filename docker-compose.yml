@@ -6,7 +6,7 @@ services:
     ports:
       - '6500:5432'
     volumes:
-      - progresDB:/data/postgres
+      - ./postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
   api:
@@ -25,5 +25,6 @@ services:
     depends_on:
       - api
     restart: always
+
 volumes:
   progresDB:
