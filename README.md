@@ -9,6 +9,7 @@ Clone the repository:
 
 ``git clone https://github.com/souvik150/Fampay-Backend-Assignment``
 
+Create a .env file with all the details.
 Install Make, Docker and Docker Compose if not already installed.
 
 Run the following commands in the project root directory:
