@@ -8,9 +8,9 @@ import (
 	"github.com/souvik150/Fampay-Backend-Assignment/internal/database"
 	"github.com/souvik150/Fampay-Backend-Assignment/internal/models"
 	"github.com/souvik150/Fampay-Backend-Assignment/internal/services"
+	"log"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -18,56 +18,32 @@ func FetchAndStoreVideos(c *fiber.Ctx) error {
 	config, _ := initializers.LoadConfig(".")
 	apiKeys := config.APIKeysYT
 	topic := c.Params("topic")
-	totalDuration := 1 * time.Minute
-	fetchInterval := 30 * time.Second
+	keyIndex := 0
 
-	stopFetching := time.After(totalDuration)
-	videosChannel := make(chan []models.Video)
-	var wg sync.WaitGroup
-
-	for _, apiKey := range apiKeys {
-		wg.Add(1)
-		go func(apiKey string) {
-			defer wg.Done()
-			for {
-				select {
-				case <-stopFetching:
-					return
-				default:
-					apiResponse, err := CallYouTubeAPI(apiKey, topic)
-					if err != nil {
-						fmt.Println("Error calling YouTube API:", err)
-						continue
-					}
-
-					videosChannel <- apiResponse
-
-					time.Sleep(fetchInterval)
-				}
-			}
-		}(apiKey)
-	}
-
-	// Background goroutine to save videos
 	go func() {
 		for {
-			select {
-			case <-stopFetching:
-				close(videosChannel) // Close the channel when fetching is done
-				return
-			case videos := <-videosChannel:
-				for i := range videos {
-					err := services.SaveVideo(videos[i])
-					if err != nil {
-						fmt.Println("Error storing videos:", err)
-					}
+			apiKey := apiKeys[keyIndex]
+
+			videos, err := CallYouTubeAPI(apiKey, topic)
+			if err != nil {
+				log.Printf("Error fetching videos: %v", err)
+				// Switch to the next available API key if quota is exhausted
+				keyIndex = (keyIndex + 1) % len(apiKeys)
+				continue
+			}
+
+			// Store videos in the database
+			for i := range videos {
+				err := services.SaveVideo(videos[i])
+				if err != nil {
+					fmt.Println("Error storing videos:", err)
 				}
 			}
+			time.Sleep(10 * time.Second)
 		}
 	}()
 
-	wg.Wait()
-	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "Started fetching video from backend for the next 2 mins."})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "Fetching videos from backend. The process is running in the background."})
 }
 
 func CallYouTubeAPI(apiKey string, searchQuery string) ([]models.Video, error) {
