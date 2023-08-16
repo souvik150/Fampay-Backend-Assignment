@@ -32,6 +32,7 @@ func main() {
 	apiGroup := app.Group("/v1")
 
 	routes.AuthRoutes(apiGroup)
+	routes.VideoRoutes(apiGroup)
 
 	apiGroup.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.Status(200).JSON(fiber.Map{

@@ -17,11 +17,13 @@ services:
       - .:/app
     env_file:
       - .env
+    restart: on-failure
   nginx:
     build: ./nginx
     ports:
       - "80:80"
     depends_on:
       - api
+    restart: always
 volumes:
   progresDB:

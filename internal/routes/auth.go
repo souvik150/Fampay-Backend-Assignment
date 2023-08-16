@@ -9,7 +9,7 @@ func AuthRoutes(group fiber.Router) {
 	userGroup := group.Group("/user")
 	userGroup.Post("/login", controllers.LoginUser)
 	userGroup.Post("/verify", controllers.VerifyOTP)
-	userGroup.Get("/resend", controllers.ResendOTP)
+	userGroup.Post("/resend", controllers.ResendOTP)
 	userGroup.Post("/signup", controllers.SignupUser)
 	userGroup.Post("/refresh", controllers.RefreshToken)
 }

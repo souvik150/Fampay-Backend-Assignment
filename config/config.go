@@ -23,6 +23,7 @@ type Config struct {
 	AWSSecretKey       string        `mapstructure:"AWS_SECRET_KEY"`
 	Email              string        `mapstructure:"EMAIL_ID"`
 	EmailPassword      string        `mapstructure:"EMAIL_PASSWORD"`
+	APIKeysYT          []string      `mapstructure:"API_KEYS_YT"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
